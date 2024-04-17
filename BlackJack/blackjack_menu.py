@@ -1,5 +1,4 @@
 import pygame, sys, random
-from blackjack_game import dealCard, deal_hand
 from button import Button
 
 pygame.init()
@@ -12,7 +11,19 @@ BG_menu = pygame.image.load("BlackJack/assets/Background.png")
 def get_font(size): 
     return pygame.font.Font("BlackJack/assets/font.ttf", size)
 
+# Function to deal a card from the deck
+def dealCard(deck):
+    return deck.pop()
 
+# Deal hand cards
+def deal_hand(deck):
+    player_hand = [dealCard(deck)]
+    dealer_hand = [dealCard(deck)]
+    player_hand.append(dealCard(deck))
+    dealer_hand.append(dealCard(deck))
+    return player_hand, dealer_hand
+
+# function to create buttons for deal card and hit or stand
 def draw_game(act, PLAY_MOUSE_POS):
     button_list = []
     if not act:
@@ -31,7 +42,7 @@ def draw_game(act, PLAY_MOUSE_POS):
         button_list.append(Hit_button)
     return button_list
 
-
+# Function to calculate score of cards in hand
 def calculateTotal(hand, card_values):
     total = sum(card_values[card] for card in hand)
     # Adjust for Aces
@@ -69,22 +80,23 @@ def play():
     end_game = False
     play_again = False
     dealer_stand = False
+    player_score = 0
+    dealer_score = 0
     text = ''
     text2 = ''
+    card_values = {
+        'spades_2': 2, 'spades_3': 3, 'spades_4': 4, 'spades_5': 5, 'spades_6': 6, 'spades_7': 7, 'spades_8': 8, 'spades_9': 9, 'spades_10': 10, 'spades_J': 10, 'spades_Q': 10, 'spades_K': 10, 'spades_A': 11,
+        'diamonds_2': 2, 'diamonds_3': 3, 'diamonds_4': 4, 'diamonds_5': 5, 'diamonds_6': 6, 'diamonds_7': 7, 'diamonds_8': 8, 'diamonds_9': 9, 'diamonds_10': 10, 'diamonds_J': 10, 'diamonds_Q': 10, 'diamonds_K': 10, 'diamonds_A': 11,
+        'clubs_2': 2, 'clubs_3': 3, 'clubs_4': 4, 'clubs_5': 5, 'clubs_6': 6, 'clubs_7': 7, 'clubs_8': 8, 'clubs_9': 9, 'clubs_10': 10, 'clubs_J': 10, 'clubs_Q': 10, 'clubs_K': 10, 'clubs_A': 11,
+        'hearts_2': 2, 'hearts_3': 3, 'hearts_4': 4, 'hearts_5': 5, 'hearts_6': 6, 'hearts_7': 7, 'hearts_8': 8, 'hearts_9': 9, 'hearts_10': 10, 'hearts_J': 10, 'hearts_Q': 10, 'hearts_K': 10, 'hearts_A': 11
+    }
+    spades = ['spades_2', 'spades_3', 'spades_4', 'spades_5', 'spades_6', 'spades_7', 'spades_8', 'spades_9', 'spades_10', 'spades_J', 'spades_Q', 'spades_K', 'spades_A']
+    diamonds = ['diamonds_2', 'diamonds_3', 'diamonds_4', 'diamonds_5', 'diamonds_6', 'diamonds_7', 'diamonds_8', 'diamonds_9', 'diamonds_10', 'diamonds_J', 'diamonds_Q', 'diamonds_K', 'diamonds_A']
+    clubs = ['clubs_2', 'clubs_3', 'clubs_4', 'clubs_5', 'clubs_6', 'clubs_7', 'clubs_8', 'clubs_9', 'clubs_10', 'clubs_J', 'clubs_Q', 'clubs_K', 'clubs_A']
+    hearts = ['hearts_2', 'hearts_3', 'hearts_4', 'hearts_5', 'hearts_6', 'hearts_7', 'hearts_8', 'hearts_9', 'hearts_10', 'hearts_J', 'hearts_Q', 'hearts_K', 'hearts_A']
+    deck = spades + diamonds + clubs + hearts
+    random.shuffle(deck)
     while True:
-        card_values = {
-            'spades_2': 2, 'spades_3': 3, 'spades_4': 4, 'spades_5': 5, 'spades_6': 6, 'spades_7': 7, 'spades_8': 8, 'spades_9': 9, 'spades_10': 10, 'spades_J': 10, 'spades_Q': 10, 'spades_K': 10, 'spades_A': 11,
-            'diamonds_2': 2, 'diamonds_3': 3, 'diamonds_4': 4, 'diamonds_5': 5, 'diamonds_6': 6, 'diamonds_7': 7, 'diamonds_8': 8, 'diamonds_9': 9, 'diamonds_10': 10, 'diamonds_J': 10, 'diamonds_Q': 10, 'diamonds_K': 10, 'diamonds_A': 11,
-            'clubs_2': 2, 'clubs_3': 3, 'clubs_4': 4, 'clubs_5': 5, 'clubs_6': 6, 'clubs_7': 7, 'clubs_8': 8, 'clubs_9': 9, 'clubs_10': 10, 'clubs_J': 10, 'clubs_Q': 10, 'clubs_K': 10, 'clubs_A': 11,
-            'hearts_2': 2, 'hearts_3': 3, 'hearts_4': 4, 'hearts_5': 5, 'hearts_6': 6, 'hearts_7': 7, 'hearts_8': 8, 'hearts_9': 9, 'hearts_10': 10, 'hearts_J': 10, 'hearts_Q': 10, 'hearts_K': 10, 'hearts_A': 11
-        }
-        spades = ['spades_2', 'spades_3', 'spades_4', 'spades_5', 'spades_6', 'spades_7', 'spades_8', 'spades_9', 'spades_10', 'spades_J', 'spades_Q', 'spades_K', 'spades_A']
-        diamonds = ['diamonds_2', 'diamonds_3', 'diamonds_4', 'diamonds_5', 'diamonds_6', 'diamonds_7', 'diamonds_8', 'diamonds_9', 'diamonds_10', 'diamonds_J', 'diamonds_Q', 'diamonds_K', 'diamonds_A']
-        clubs = ['clubs_2', 'clubs_3', 'clubs_4', 'clubs_5', 'clubs_6', 'clubs_7', 'clubs_8', 'clubs_9', 'clubs_10', 'clubs_J', 'clubs_Q', 'clubs_K', 'clubs_A']
-        hearts = ['hearts_2', 'hearts_3', 'hearts_4', 'hearts_5', 'hearts_6', 'hearts_7', 'hearts_8', 'hearts_9', 'hearts_10', 'hearts_J', 'hearts_Q', 'hearts_K', 'hearts_A']
-        deck = spades + diamonds + clubs + hearts
-        random.shuffle(deck)
-
         PLAY_MOUSE_POS = pygame.mouse.get_pos()
 
         SCREEN.fill("white")
@@ -98,7 +110,7 @@ def play():
         PH_RECT = PLAYER_HAND_TEXT.get_rect(midleft=(50, 515))
         SCREEN.blit(PLAYER_HAND_TEXT, PH_RECT)
 
-        DECK_TEXT = get_font(20).render("Deck", True, "White")
+        DECK_TEXT = get_font(20).render(f"Deck: {len(deck)}", True, "White")
         DECK_RECT = DECK_TEXT.get_rect(center=(150, 138))
         SCREEN.blit(DECK_TEXT, DECK_RECT)
 
@@ -166,6 +178,8 @@ def play():
                     dealer_bust = True
                 if dealer_score >= 17:
                     dealer_stand = True
+                if player_stand and dealer_score >= player_score:
+                    dealer_stand
 
         if player_bust:
             text = 'Player bust!'
@@ -190,6 +204,10 @@ def play():
         button_list = draw_game(active, PLAY_MOUSE_POS)
 
         if end_game:
+            dealer_stand = True
+            dealer_turn = False
+            dealer_hit = False
+            hide_card = False
             SCREEN.blit(pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(1280, 720)), (0,0))
             text2 = determineWinner(player_score, dealer_score)
             Again_button = Button(image=pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(150, 50)), pos=(645, 380), text_input="AGAIN", font=get_font(25), base_color="Yellow", hovering_color="Green")
