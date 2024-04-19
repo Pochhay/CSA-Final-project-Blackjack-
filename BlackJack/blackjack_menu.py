@@ -236,7 +236,7 @@ def play():
                         player_hit = True
                         hide_card = False
                         dealer_turn = True
-                    else:
+                    elif button_list[0].checkForInput(PLAY_MOUSE_POS):
                         player_stand = True
                         hide_card = False  
                 if not active:
