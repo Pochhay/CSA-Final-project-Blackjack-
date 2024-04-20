@@ -1,5 +1,6 @@
 import pygame, sys, random
 from button import Button
+from pygame import mixer
 
 pygame.init()
 
@@ -7,6 +8,13 @@ SCREEN = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Blackjack♠️♦️♣️♥️")
 
 BG_menu = pygame.image.load("BlackJack/assets/Background.png")
+
+mixer.music.load("BlackJack/assets/The 'In' Crowd.wav")
+mixer.music.play(-1)
+
+button_sound = mixer.Sound("BlackJack/assets/Button⧸Plate Click (Minecraft Sound).wav")
+card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.mp3")
+silence = "BlackJack/assets/silence.wav"
 
 def get_font(size): 
     return pygame.font.Font("BlackJack/assets/font.ttf", size)
@@ -78,7 +86,6 @@ def play():
     dealer_bust = False
     dealer_turn = False
     end_game = False
-    play_again = False
     dealer_stand = False
     player_score = 0
     dealer_score = 0
@@ -123,19 +130,21 @@ def play():
 
         # deck 
         back_light = pygame.image.load("BlackJack/assets/playing-cards-master/back_light.png")
-        back_dark = pygame.image.load("BlackJack/assets/playing-cards-master/back_dark.png")
         SCREEN.blit(pygame.transform.scale(back_light, (card_width, card_height)), (70, 158))
 
         if deal_start:
             player_hand, dealer_hand = deal_hand(deck)
+            card_sound.play()
             deal_start = False
         
         if player_hit:
             player_hand.append(dealCard(deck))
+            card_sound.play()
             player_hit = False
 
         if dealer_hit:
             dealer_hand.append(dealCard(deck))
+            card_sound.play()
             dealer_hit = False
         
         if player_stand:
@@ -169,7 +178,9 @@ def play():
                 DEALER_HAND_TEXT = get_font(20).render(f"Score: {dealer_score}", True, "White")
                 DH_RECT = DEALER_HAND_TEXT.get_rect(midleft=(660, 40))
                 SCREEN.blit(DEALER_HAND_TEXT, DH_RECT)
-                if dealer_score < 17 and dealer_turn == True:
+                if player_stand and dealer_score >= player_score:
+                    dealer_stand = True
+                elif dealer_score < 17 and dealer_turn == True:
                     dealer_hit = True
                     dealer_turn = False
                 if dealer_score == 21:
@@ -178,8 +189,7 @@ def play():
                     dealer_bust = True
                 if dealer_score >= 17:
                     dealer_stand = True
-                if player_stand and dealer_score >= player_score:
-                    dealer_stand
+
 
         if player_bust:
             text = 'Player bust!'
@@ -187,19 +197,15 @@ def play():
         elif player_bj:
             text = 'Blackjack!'
             end_game = True
-
         if dealer_bust:
             text = 'Dealer bust!'
             end_game = True
         elif dealer_bj:
             text = 'Blackjack!'
             end_game = True
-
         RIGHT_TEXT = get_font(20).render(f"{text}", True, "White")
         RT_RECT = RIGHT_TEXT.get_rect(midright=(1240, 360))
         SCREEN.blit(RIGHT_TEXT, RT_RECT)
-
-
 
         button_list = draw_game(active, PLAY_MOUSE_POS)
 
@@ -230,6 +236,7 @@ def play():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):
+                    button_sound.play()
                     main_menu()
                 if active:
                     if button_list[1].checkForInput(PLAY_MOUSE_POS):
@@ -237,32 +244,82 @@ def play():
                         hide_card = False
                         dealer_turn = True
                     elif button_list[0].checkForInput(PLAY_MOUSE_POS):
+                        button_sound.play()
                         player_stand = True
                         hide_card = False  
                 if not active:
                     if button_list[0].checkForInput(PLAY_MOUSE_POS):
+                        button_sound.play()
                         active = True
                         deal_start = True
                 if end_game:
                     if Again_button.checkForInput(PLAY_MOUSE_POS):
+                        button_sound.play()
                         play()
 
         pygame.display.update()
-    
+
+music_status = True
+status = ['ON', 'OFF']
+sfx_status = True
+
 def options():
+    global music_status
+    global sfx_status
+    global button_sound
+    global card_sound
+    sfx_tick = True
+    music_tick = True
     while True:
         OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
 
         SCREEN.fill("Black")
 
         OPTIONS_TEXT = get_font(45).render("OPTIONS", True, "White")
-        OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(640, 260))
+        OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(640, 100))
         SCREEN.blit(OPTIONS_TEXT, OPTIONS_RECT)
+
+        MUSIC_TEXT = get_font(45).render("MUSIC:", True, "White")
+        MUSIC_RECT = MUSIC_TEXT.get_rect(center=(320, 260))
+        SCREEN.blit(MUSIC_TEXT, MUSIC_RECT)
+
+        if music_status:
+            MUSIC_BUTTON = Button(image=None, pos=(550, 260), text_input=f"{status[0]}", font=get_font(45), base_color="White", hovering_color="Green")
+        elif not music_status:
+            MUSIC_BUTTON = Button(image=None, pos=(550, 260), text_input=f"{status[1]}", font=get_font(45), base_color="White", hovering_color="Red")
+        MUSIC_BUTTON.changeColor(OPTIONS_MOUSE_POS)
+        MUSIC_BUTTON.update(SCREEN)
+
+        SFX_TEXT = get_font(45).render("SOUND:", True, "White")
+        SFX_RECT = SFX_TEXT.get_rect(center=(320, 420))
+        SCREEN.blit(SFX_TEXT, SFX_RECT)
+
+        if sfx_status:
+            SFX_BUTTON = Button(image=None, pos=(550, 420), text_input=f"{status[0]}", font=get_font(45), base_color="White", hovering_color="Green")
+        elif not sfx_status:
+            SFX_BUTTON = Button(image=None, pos=(550, 420), text_input=f"{status[1]}", font=get_font(45), base_color="White", hovering_color="Red")
+        SFX_BUTTON.changeColor(OPTIONS_MOUSE_POS)
+        SFX_BUTTON.update(SCREEN)
 
         OPTIONS_BACK = Button(image=None, pos=(30, 30), text_input="<—", font=get_font(25), base_color="White", hovering_color="Red")
 
         OPTIONS_BACK.changeColor(OPTIONS_MOUSE_POS)
         OPTIONS_BACK.update(SCREEN)
+
+        if not music_status and music_tick:
+            mixer.music.pause()
+            music_tick = False
+        elif music_status and not music_tick:
+            mixer.music.unpause()
+            music_tick = True
+        if not sfx_status and sfx_tick:
+            button_sound = mixer.Sound(f"{silence}")
+            card_sound = mixer.Sound(f"{silence}")
+            sfx_tick = False
+        elif sfx_status and not sfx_tick:
+            button_sound = mixer.Sound("BlackJack/assets/Button⧸Plate Click (Minecraft Sound).wav")
+            card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.mp3")
+            sfx_tick = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -270,12 +327,21 @@ def options():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if OPTIONS_BACK.checkForInput(OPTIONS_MOUSE_POS):
+                    button_sound.play()
                     main_menu()
+                if MUSIC_BUTTON.checkForInput(OPTIONS_MOUSE_POS):
+                    button_sound.play()
+                    music_status = not music_status
+                if SFX_BUTTON.checkForInput(OPTIONS_MOUSE_POS):
+                    button_sound.play()
+                    sfx_status = not sfx_status
 
         pygame.display.update()
 
 def main_menu():
     clock = pygame.time.Clock()
+    global music_status
+    global sfx_status
     while True:
         clock.tick(60)
         SCREEN.blit(BG_menu, (0, 0))
@@ -294,6 +360,7 @@ def main_menu():
         for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(SCREEN)
+
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -301,10 +368,13 @@ def main_menu():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sound.play()
                     play()
                 if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sound.play()
                     options()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sound.play()
                     pygame.quit()
                     sys.exit()
 
