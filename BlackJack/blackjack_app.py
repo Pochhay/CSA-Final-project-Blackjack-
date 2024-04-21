@@ -1,4 +1,28 @@
-import random
+import pygame, sys, random
+
+import pygame.locals
+from button import Button
+from pygame import mixer
+
+pygame.init()
+
+SCREEN = pygame.display.set_mode((1280, 720))
+pygame.display.set_caption("Blackjack")
+
+icon = pygame.image.load("BlackJack/assets/icon.png")
+pygame.display.set_icon(icon)
+
+BG_menu = pygame.image.load("BlackJack/assets/Background.png")
+
+mixer.music.load("BlackJack/assets/The 'In' Crowd.wav")
+mixer.music.play(-1)
+
+button_sound = mixer.Sound("BlackJack/assets/Button⧸Plate Click (Minecraft Sound).wav")
+card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.mp3")
+silence = "BlackJack/assets/silence.wav"
+
+def get_font(size): 
+    return pygame.font.Font("BlackJack/assets/font.ttf", size)
 
 # Function to deal a card from the deck
 def dealCard(deck):
@@ -12,136 +36,437 @@ def deal_hand(deck):
     dealer_hand.append(dealCard(deck))
     return player_hand, dealer_hand
 
-
-# Function to calculate the total score of all cards in the list
+# Function to calculate score of cards in hand
 def calculateTotal(hand, card_values):
     total = sum(card_values[card] for card in hand)
     # Adjust for Aces
     for card in hand:
-        if card in ['sA', 'dA', 'cA', 'hA'] and total > 21:
+        if card in ['spades_A', 'diamonds_A', 'clubs_A', 'hearts_A'] and total > 21:
             total -= 10
     return total
-
-# Function to handle player's turn
-def playerTurn(deck, player_hand, card_values):
-    while True:
-        player_choice = input("Hit or Stand: ").lower()
-        if player_choice == 'hit':
-            player_hand.append(dealCard(deck))
-            print("Player hand")
-            print(player_hand)
-            player_score = calculateTotal(player_hand, card_values)
-            print("Player score: ", player_score)
-            if player_score == 21:
-                return 2
-            elif player_score > 21:
-                print("Player busts! Dealer wins!")
-                return -1
-            return True
-        elif player_choice == 'stand':
-            return False
-        else:
-            print("Invalid input. Please try again.")
-
-# Function to handle dealer's turn
-def dealerTurn(deck, dealer_hand, card_values, counter):
-    dealer_score = calculateTotal(dealer_hand, card_values)
-    if counter == 0:
-        print("Dealer hand:")
-        print(dealer_hand)
-        print("Dealer score: ", dealer_score)
-    if dealer_score < 17:
-        print("Dealer hit")
-        dealer_hand.append(dealCard(deck))
-        dealer_score = calculateTotal(dealer_hand, card_values)
-        print("Dealer hand:")
-        print(dealer_hand)
-        print("Dealer score: ", dealer_score)
-        if dealer_score > 21:
-            print("Dealer busts! Player wins!")
-            return -1
-        return True
-
-    else:
-        print("Dealer stand")
-        return False
-
-# Function to cycle dealing card
-def DealingCycle(deck, player_hand, dealer_hand, card_values):
-    player_turn = True
-    dealer_turn = True
-    counter = 0
-    while True:
-        if calculateTotal(player_hand, card_values) == 21:
-            print("Player hit Black Jack!")
-            break
-        if player_turn:
-            player_turn = playerTurn(deck, player_hand, card_values)
-            if player_turn == -1:
-                break
-            if player_turn == 2:
-                continue
-        if dealer_turn:
-            dealer_turn = dealerTurn(deck, dealer_hand, card_values, counter)
-            counter += 1
-            if dealer_turn == -1:
-                break
-        if calculateTotal(dealer_hand, card_values) == 21:
-            print("Dealer hit Black Jack!")
-            break
-        if player_turn == False and dealer_turn == False:
-            break
 
 # Function to determine the winner
 def determineWinner(player_score, dealer_score):
     if player_score > 21:
-        print("Dealer wins!")
+        text2 = "Dealer wins!"
     elif dealer_score > 21:
-        print("Player wins!")
+        text2 = "Player wins!"
     elif player_score > dealer_score:
-        print("Player wins!")
+        text2 = "Player wins!"
     elif dealer_score > player_score:
-        print("Dealer wins!")
+        text2 = "Dealer wins!"
     else:
-        print("It's a tie!")
+        text2 = "It's a tie!"
+    return text2
 
-# Main function
-def main():
+# function to create iteractive button of game
+def draw_game(act, PLAY_MOUSE_POS):
+    button_list = []
+    if not act:         
+        Add_button = Button(image=pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(45, 45)), pos=(750, 300), text_input="+", font=get_font(25), base_color="White", hovering_color="Green")
+        Add_button.changeColor(PLAY_MOUSE_POS)
+        Add_button.update(SCREEN)
+
+        Minus_button = Button(image=pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(45, 45)), pos=(540, 300), text_input="-", font=get_font(25), base_color="White", hovering_color="Red")
+        Minus_button.changeColor(PLAY_MOUSE_POS)
+        Minus_button.update(SCREEN)
+
+        Deal_button = Button(image=pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(150, 50)), pos=(645, 365), text_input="DEAL", font=get_font(25), base_color="Yellow", hovering_color="Green")
+        Deal_button.changeColor(PLAY_MOUSE_POS)
+        Deal_button.update(SCREEN)
+
+        button_list.append(Deal_button)
+        button_list.append(Minus_button)
+        button_list.append(Add_button)
+    elif act:
+        Hit_button = Button(image=pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(150, 50)), pos=(560, 670), text_input="HIT", font=get_font(25), base_color="Yellow", hovering_color="Green")
+        Hit_button.changeColor(PLAY_MOUSE_POS)
+        Hit_button.update(SCREEN)
+
+        Stand_button = Button(image=pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(150, 50)), pos=(730, 670), text_input="STAND", font=get_font(25), base_color="Yellow", hovering_color="Green")
+        Stand_button.changeColor(PLAY_MOUSE_POS)
+        Stand_button.update(SCREEN)
+
+        button_list.append(Stand_button)
+        button_list.append(Hit_button)
+    return button_list
+
+bet_value = 10
+# Function for game window
+def play(bet_value = 10):
+    active = False
+    deal_start = False
+    player_hit = False
+    player_stand = False
+    hide_card = True
+    dealer_hit = False
+    player_bj = False
+    dealer_bj = False
+    player_bust = False
+    dealer_bust = False
+    dealer_turn = False
+    end_game = False
+    dealer_stand = False
+    bet_tick = False
+    prize_tick = True
+    player_score = 0
+    dealer_score = 0
+    prize_money = ''
+    text = ''
+    text2 = ''
+    card_values = {
+        'spades_2': 2, 'spades_3': 3, 'spades_4': 4, 'spades_5': 5, 'spades_6': 6, 'spades_7': 7, 'spades_8': 8, 'spades_9': 9, 'spades_10': 10, 'spades_J': 10, 'spades_Q': 10, 'spades_K': 10, 'spades_A': 11,
+        'diamonds_2': 2, 'diamonds_3': 3, 'diamonds_4': 4, 'diamonds_5': 5, 'diamonds_6': 6, 'diamonds_7': 7, 'diamonds_8': 8, 'diamonds_9': 9, 'diamonds_10': 10, 'diamonds_J': 10, 'diamonds_Q': 10, 'diamonds_K': 10, 'diamonds_A': 11,
+        'clubs_2': 2, 'clubs_3': 3, 'clubs_4': 4, 'clubs_5': 5, 'clubs_6': 6, 'clubs_7': 7, 'clubs_8': 8, 'clubs_9': 9, 'clubs_10': 10, 'clubs_J': 10, 'clubs_Q': 10, 'clubs_K': 10, 'clubs_A': 11,
+        'hearts_2': 2, 'hearts_3': 3, 'hearts_4': 4, 'hearts_5': 5, 'hearts_6': 6, 'hearts_7': 7, 'hearts_8': 8, 'hearts_9': 9, 'hearts_10': 10, 'hearts_J': 10, 'hearts_Q': 10, 'hearts_K': 10, 'hearts_A': 11
+    }
+    spades = ['spades_2', 'spades_3', 'spades_4', 'spades_5', 'spades_6', 'spades_7', 'spades_8', 'spades_9', 'spades_10', 'spades_J', 'spades_Q', 'spades_K', 'spades_A']
+    diamonds = ['diamonds_2', 'diamonds_3', 'diamonds_4', 'diamonds_5', 'diamonds_6', 'diamonds_7', 'diamonds_8', 'diamonds_9', 'diamonds_10', 'diamonds_J', 'diamonds_Q', 'diamonds_K', 'diamonds_A']
+    clubs = ['clubs_2', 'clubs_3', 'clubs_4', 'clubs_5', 'clubs_6', 'clubs_7', 'clubs_8', 'clubs_9', 'clubs_10', 'clubs_J', 'clubs_Q', 'clubs_K', 'clubs_A']
+    hearts = ['hearts_2', 'hearts_3', 'hearts_4', 'hearts_5', 'hearts_6', 'hearts_7', 'hearts_8', 'hearts_9', 'hearts_10', 'hearts_J', 'hearts_Q', 'hearts_K', 'hearts_A']
+    deck = spades + diamonds + clubs + hearts
+    random.shuffle(deck)
     while True:
-        # Create a deck of cards
-        card_values = {'s2': 2, 's3': 3, 's4': 4, 's5': 5, 's6': 6, 's7': 7, 's8': 8, 's9': 9, 's10': 10, 'sJ': 10, 'sQ': 10, 'sK': 10, 'sA': 11,
-                        'd2': 2, 'd3': 3, 'd4': 4, 'd5': 5, 'd6': 6, 'd7': 7, 'd8': 8, 'd9': 9, 'd10': 10, 'dJ': 10, 'dQ': 10, 'dK': 10, 'dA': 11,
-                        'c2': 2, 'c3': 3, 'c4': 4, 'c5': 5, 'c6': 6, 'c7': 7, 'c8': 8, 'c9': 9, 'c10': 10, 'cJ': 10, 'cQ': 10, 'cK': 10, 'cA': 11,
-                        'h2': 2, 'h3': 3, 'h4': 4, 'h5': 5, 'h6': 6, 'h7': 7, 'h8': 8, 'h9': 9, 'h10': 10, 'hJ': 10, 'hQ': 10, 'hK': 10, 'hA': 11,}
-        spades   = ['s2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sJ', 'sQ', 'sK', 'sA']
-        diamonds = ['d2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'dJ', 'dQ', 'dK', 'dA']
-        clubs    = ['c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'cJ', 'cQ', 'cK', 'cA']
-        hearts   = ['h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'hJ', 'hQ', 'hK', 'hA']
-        deck     = spades + diamonds + clubs + hearts
-        random.shuffle(deck)
-        # Greeting
-        print("\nWelcome to blackjack game\n")
+        credit_card = open("BlackJack/assets/coin.txt", 'r')
+        money = float(credit_card.read())
+        credit_card.close()
 
-        player_hand, dealer_hand = deal_hand(deck)
+        PLAY_MOUSE_POS = pygame.mouse.get_pos()
 
-        print("Player hand:")
-        print(player_hand)
-        player_score = calculateTotal(player_hand, card_values)
-        print(f"Player score: {player_score}", len(deck))
-        print("Dealer hand:")
-        print(f"['{dealer_hand[0]}', ?]")
+        SCREEN.fill("white")
+        SCREEN.blit(pygame.image.load("BlackJack/assets/green table.jpg"), (0,0))
+
+        DEALER_HAND_TEXT = get_font(20).render("Dealer's Hand", True, "White")
+        DH_RECT = DEALER_HAND_TEXT.get_rect(center=(490, 40))
+        SCREEN.blit(DEALER_HAND_TEXT, DH_RECT)
+
+        PLAYER_HAND_TEXT = get_font(20).render("Player's Hand", True, "White")
+        PH_RECT = PLAYER_HAND_TEXT.get_rect(midleft=(50, 515))
+        SCREEN.blit(PLAYER_HAND_TEXT, PH_RECT)
+
+        Total_cash_TEXT = get_font(20).render(f"Total Cash: {money}$", True, "White")
+        TC_RECT = Total_cash_TEXT.get_rect(midleft=(50, 650))
+        SCREEN.blit(Total_cash_TEXT, TC_RECT)
+
+        Total_cash_TEXT = get_font(20).render(f"Bet: {bet_value if active and not end_game else 0}$", True, "White")
+        TC_RECT = Total_cash_TEXT.get_rect(midleft=(50, 680))
+        SCREEN.blit(Total_cash_TEXT, TC_RECT)
+
+        DECK_TEXT = get_font(20).render(f"Deck: {len(deck)}", True, "White")
+        DECK_RECT = DECK_TEXT.get_rect(center=(150, 138))
+        SCREEN.blit(DECK_TEXT, DECK_RECT)
+
+        card_width = 146
+        card_height = 204
+        card_xpos = 335
+        card_ypos_d = 80
+        card_ypos_p = 418
+        card_arrange = card_width + 11
+
+        # deck 
+        back_light = pygame.image.load("BlackJack/assets/playing-cards-master/back_light.png")
+        SCREEN.blit(pygame.transform.scale(back_light, (card_width, card_height)), (70, 158))
+
+        if deal_start:
+            player_hand, dealer_hand = deal_hand(deck)
+            card_sound.play()
+            deal_start = False
         
-        # card dealing cycle
-        DealingCycle(deck, player_hand, dealer_hand, card_values)
+        if player_hit:
+            player_hand.append(dealCard(deck))
+            card_sound.play()
+            player_hit = False
 
-        # Determine winner
-        player_score = calculateTotal(player_hand, card_values)
-        dealer_score = calculateTotal(dealer_hand, card_values)
-        determineWinner(player_score, dealer_score)
+        if dealer_hit:
+            dealer_hand.append(dealCard(deck))
+            card_sound.play()
+            dealer_hit = False
+        
+        if player_stand:
+            dealer_turn = True
+            if dealer_stand:
+                end_game = True
+            
+        if active:
+            # show player hand
+            if not bet_tick:
+                credit_card = open("BlackJack/assets/coin.txt", 'w')
+                credit_card.write(f"{money - bet_value}")
+                credit_card.close()
+                bet_tick = True
+            for i, card in enumerate(player_hand):
+                SCREEN.blit(pygame.transform.scale(pygame.image.load(f"BlackJack/assets/playing-cards-master/{card}.png"), (card_width, card_height)), (card_xpos + card_arrange * i, card_ypos_p))
+            player_score = calculateTotal(player_hand, card_values)
+            PLAYER_SCORE_TEXT = get_font(20).render(f"Score: {player_score}", True, "White")
+            PS_RECT = PLAYER_SCORE_TEXT.get_rect(midleft=(50, 545))
+            SCREEN.blit(PLAYER_SCORE_TEXT, PS_RECT)
+            if player_score == 21:
+                player_bj = True
+            if player_score > 21:
+                player_bust = True
+            # show dealer hand
+            if hide_card:
+                SCREEN.blit(pygame.transform.scale(pygame.image.load(f"BlackJack/assets/playing-cards-master/back_light.png"), (card_width, card_height)), (card_xpos + card_arrange * 1, card_ypos_d))
+                SCREEN.blit(pygame.transform.scale(pygame.image.load(f"BlackJack/assets/playing-cards-master/{dealer_hand[0]}.png"), (card_width, card_height)), (card_xpos + card_arrange * 0, card_ypos_d))
+                DEALER_HAND_TEXT = get_font(20).render(f"Score: {card_values[dealer_hand[0]]} + ?", True, "White")
+                DH_RECT = DEALER_HAND_TEXT.get_rect(midleft=(660, 40))
+                SCREEN.blit(DEALER_HAND_TEXT, DH_RECT)
+            elif not hide_card: 
+                for i, card in enumerate(dealer_hand):
+                    SCREEN.blit(pygame.transform.scale(pygame.image.load(f"BlackJack/assets/playing-cards-master/{card}.png"), (card_width, card_height)), (card_xpos + card_arrange * i, card_ypos_d))
+                dealer_score = calculateTotal(dealer_hand, card_values)
+                DEALER_HAND_TEXT = get_font(20).render(f"Score: {dealer_score}", True, "White")
+                DH_RECT = DEALER_HAND_TEXT.get_rect(midleft=(660, 40))
+                SCREEN.blit(DEALER_HAND_TEXT, DH_RECT)
+                if player_stand and dealer_score >= player_score:
+                    dealer_stand = True
+                elif dealer_score < 17 and dealer_turn == True:
+                    dealer_hit = True
+                    dealer_turn = False
+                if dealer_score == 21:
+                    dealer_bj = True
+                if dealer_score > 21:
+                    dealer_bust = True
+                if dealer_score >= 17:
+                    dealer_stand = True
 
-        game_loop = input("Continue?(Y/N): ")
-        if game_loop.lower() == 'n':
-            break
+
+        if player_bust:
+            text = 'Player bust!'
+            end_game = True
+        elif player_bj:
+            text = 'Blackjack!'
+            end_game = True
+        if dealer_bust:
+            text = 'Dealer bust!'
+            end_game = True
+        elif dealer_bj:
+            text = 'Blackjack!'
+            end_game = True
+        RIGHT_TEXT = get_font(20).render(f"{text}", True, "White")
+        RT_RECT = RIGHT_TEXT.get_rect(midright=(1240, 360))
+        SCREEN.blit(RIGHT_TEXT, RT_RECT)
+
+        if not active:
+            SCREEN.blit(pygame.transform.scale(pygame.image.load("BlackJack/assets/grey rect.png"), (275, 60)), (507.5, 270))
+            BET_VALUE_TEXT = get_font(20).render(f"{bet_value}$", True, "Black")
+            BV_RECT = BET_VALUE_TEXT.get_rect(center=(645, 300))
+            SCREEN.blit(BET_VALUE_TEXT, BV_RECT)
+            BET_TEXT = get_font(20).render("Bet Amount", True, "White")
+            BT_RECT = BET_TEXT.get_rect(center=(645, 250))
+            SCREEN.blit(BET_TEXT, BT_RECT)
+        
+        
+        button_list = draw_game(active, PLAY_MOUSE_POS)
+
+        if end_game:
+            dealer_stand = True
+            dealer_turn = False
+            dealer_hit = False
+            hide_card = False
+            SCREEN.blit(pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(1280, 720)), (0,0))
+            text2 = determineWinner(player_score, dealer_score)
+            Again_button = Button(image=pygame.transform.scale(pygame.image.load("BlackJack/assets/Play Rect.png"),(150, 50)), pos=(645, 390), text_input="AGAIN", font=get_font(25), base_color="Yellow", hovering_color="Green")
+            Again_button.changeColor(PLAY_MOUSE_POS)
+            Again_button.update(SCREEN)
+            CENTER1_TEXT = get_font(20).render(f"{text2}", True, "White")
+            C1T_RECT = CENTER1_TEXT.get_rect(center=(640, 300))
+            SCREEN.blit(CENTER1_TEXT, C1T_RECT)
+
+            CENTER_TEXT = get_font(20).render(f"+{prize_money}$" if not prize_tick else f"-{bet_value}$", True, "White")
+            CT_RECT = CENTER_TEXT.get_rect(center=(640, 340))
+            SCREEN.blit(CENTER_TEXT, CT_RECT) 
+
+        if prize_tick:
+            if player_bj:
+                prize_tick = False
+                prize_money = bet_value * 2.5
+                credit_card = open("BlackJack/assets/coin.txt", 'w')
+                credit_card.write(f"{money + prize_money}")
+                credit_card.close()
+            elif text2 == 'Player wins!':
+                prize_tick = False
+                prize_money = bet_value * 2
+                credit_card = open("BlackJack/assets/coin.txt", 'w')
+                credit_card.write(f"{money + prize_money}")
+                credit_card.close()
+            elif text2 == 'It\'s a tie!':
+                prize_money = bet_value
+                credit_card = open("BlackJack/assets/coin.txt", 'w')
+                credit_card.write(f"{money + prize_money}")
+                credit_card.close()
+                prize_tick = False
+
+           
+
+        PLAY_BACK = Button(image=None, pos=(30, 30), text_input="<—", font=get_font(25), base_color="White", hovering_color="Red")
+        PLAY_BACK.changeColor(PLAY_MOUSE_POS)
+        PLAY_BACK.update(SCREEN)
+
+        seting_icon = pygame.image.load("BlackJack/assets/setting_icon.png")
+        SETTING_ICON = Button(image=pygame.transform.scale(seting_icon, (100, 100)), pos=(1250, 30), text_input="", font=get_font(25), base_color="White", hovering_color="Red")
+        SETTING_ICON.update(SCREEN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):
+                    button_sound.play()
+                    main_menu()
+                if SETTING_ICON.checkForInput(PLAY_MOUSE_POS):
+                    button_sound.play()
+                    options('play')
+                if active:
+                    if button_list[1].checkForInput(PLAY_MOUSE_POS):
+                        player_hit = True
+                        hide_card = False
+                        dealer_turn = True
+                    elif button_list[0].checkForInput(PLAY_MOUSE_POS):
+                        button_sound.play()
+                        player_stand = True
+                        hide_card = False  
+                if not active:
+                    if button_list[0].checkForInput(PLAY_MOUSE_POS):
+                        button_sound.play()
+                        active = True
+                        deal_start = True
+                    elif button_list[1].checkForInput(PLAY_MOUSE_POS):
+                        if bet_value > 0:
+                            button_sound.play()
+                            bet_value -= 1
+                    elif button_list[2].checkForInput(PLAY_MOUSE_POS):
+                        bet_value += 1
+                        button_sound.play()
+                if end_game:
+                    if Again_button.checkForInput(PLAY_MOUSE_POS):
+                        button_sound.play()
+                        play(bet_value)
+
+        pygame.display.update()
+
+music_status = True
+status = ['ON', 'OFF']
+sfx_status = True
+
+# Function for options setting window
+def options(previous='menu'):
+    global music_status
+    global sfx_status
+    global button_sound
+    global card_sound
+    sfx_tick = True
+    music_tick = True
+    while True:
+        OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
+
+        SCREEN.fill("Black")
+
+        OPTIONS_TEXT = get_font(45).render("OPTIONS", True, "White")
+        OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(640, 100))
+        SCREEN.blit(OPTIONS_TEXT, OPTIONS_RECT)
+
+        MUSIC_TEXT = get_font(45).render("MUSIC:", True, "White")
+        MUSIC_RECT = MUSIC_TEXT.get_rect(center=(320, 260))
+        SCREEN.blit(MUSIC_TEXT, MUSIC_RECT)
+
+        if music_status:
+            MUSIC_BUTTON = Button(image=None, pos=(550, 260), text_input=f"{status[0]}", font=get_font(45), base_color="White", hovering_color="Green")
+        elif not music_status:
+            MUSIC_BUTTON = Button(image=None, pos=(550, 260), text_input=f"{status[1]}", font=get_font(45), base_color="White", hovering_color="Red")
+        MUSIC_BUTTON.changeColor(OPTIONS_MOUSE_POS)
+        MUSIC_BUTTON.update(SCREEN)
+
+        SFX_TEXT = get_font(45).render("SOUND:", True, "White")
+        SFX_RECT = SFX_TEXT.get_rect(center=(320, 420))
+        SCREEN.blit(SFX_TEXT, SFX_RECT)
+
+        if sfx_status:
+            SFX_BUTTON = Button(image=None, pos=(550, 420), text_input=f"{status[0]}", font=get_font(45), base_color="White", hovering_color="Green")
+        elif not sfx_status:
+            SFX_BUTTON = Button(image=None, pos=(550, 420), text_input=f"{status[1]}", font=get_font(45), base_color="White", hovering_color="Red")
+        SFX_BUTTON.changeColor(OPTIONS_MOUSE_POS)
+        SFX_BUTTON.update(SCREEN)
+
+        OPTIONS_BACK = Button(image=None, pos=(30, 30), text_input="<—", font=get_font(25), base_color="White", hovering_color="Red")
+        OPTIONS_BACK.changeColor(OPTIONS_MOUSE_POS)
+        OPTIONS_BACK.update(SCREEN)
+
+        if not music_status and music_tick:
+            mixer.music.pause()
+            music_tick = False
+        elif music_status and not music_tick:
+            mixer.music.unpause()
+            music_tick = True
+        if not sfx_status and sfx_tick:
+            button_sound = mixer.Sound(f"{silence}")
+            card_sound = mixer.Sound(f"{silence}")
+            sfx_tick = False
+        elif sfx_status and not sfx_tick:
+            button_sound = mixer.Sound("BlackJack/assets/Button⧸Plate Click (Minecraft Sound).wav")
+            card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.mp3")
+            sfx_tick = True
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if OPTIONS_BACK.checkForInput(OPTIONS_MOUSE_POS):
+                    button_sound.play()
+                    if previous == 'menu':
+                        main_menu()
+                    elif previous == 'play':
+                        play()
+                if MUSIC_BUTTON.checkForInput(OPTIONS_MOUSE_POS):
+                    button_sound.play()
+                    music_status = not music_status
+                if SFX_BUTTON.checkForInput(OPTIONS_MOUSE_POS):
+                    button_sound.play()
+                    sfx_status = not sfx_status
+
+        pygame.display.update()
+
+def main_menu():
+    global music_status
+    global sfx_status
+    while True:
+        SCREEN.blit(BG_menu, (0, 0))
+
+        MENU_MOUSE_POS = pygame.mouse.get_pos()
+
+        MENU_TEXT = get_font(100).render("BLACKJACK", True, "#b68f40")
+        MENU_RECT = MENU_TEXT.get_rect(center=(640, 100))
+
+        PLAY_BUTTON = Button(image=pygame.image.load("BlackJack/assets/Play Rect.png"), pos=(640, 250), text_input="PLAY", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        OPTIONS_BUTTON = Button(image=pygame.image.load("BlackJack/assets/Options Rect.png"), pos=(640, 400), text_input="OPTIONS", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        QUIT_BUTTON = Button(image=pygame.image.load("BlackJack/assets/Quit Rect.png"), pos=(640, 550), text_input="QUIT", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+
+        SCREEN.blit(MENU_TEXT, MENU_RECT)
+
+        for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
+            button.changeColor(MENU_MOUSE_POS)
+            button.update(SCREEN)
+
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sound.play()
+                    play()
+                if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sound.play()
+                    options()
+                if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    button_sound.play()
+                    pygame.quit()
+                    sys.exit()
+
+        pygame.display.update()
 
 if __name__ == '__main__':
-    main()
+    main_menu()
