@@ -92,7 +92,6 @@ def draw_game(act, PLAY_MOUSE_POS):
         button_list.append(Hit_button)
     return button_list
 
-bet_value = 10
 # Function for game window
 def play(bet_value = 10):
     active = False
@@ -332,7 +331,7 @@ def play(bet_value = 10):
                         player_stand = True
                         hide_card = False  
                 if not active:
-                    if button_list[0].checkForInput(PLAY_MOUSE_POS):
+                    if button_list[0].checkForInput(PLAY_MOUSE_POS) and money >= bet_value:
                         button_sound.play()
                         active = True
                         deal_start = True
