@@ -18,7 +18,8 @@ mixer.music.load("BlackJack/assets/The 'In' Crowd.wav")
 mixer.music.play(-1)
 
 button_sound = mixer.Sound("BlackJack/assets/Button⧸Plate Click (Minecraft Sound).wav")
-card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.mp3")
+card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.wav")
+cash_sound = mixer.Sound("BlackJack/assets/Cash Register.wav")
 silence = "BlackJack/assets/silence.wav"
 
 def get_font(size): 
@@ -279,18 +280,21 @@ def play(bet_value = 10):
 
         if prize_tick:
             if player_bj:
+                cash_sound.play()
                 prize_tick = False
                 prize_money = bet_value * 2.5
                 credit_card = open("BlackJack/assets/coin.txt", 'w')
                 credit_card.write(f"{money + prize_money}")
                 credit_card.close()
             elif text2 == 'Player wins!':
+                cash_sound.play()
                 prize_tick = False
                 prize_money = bet_value * 2
                 credit_card = open("BlackJack/assets/coin.txt", 'w')
                 credit_card.write(f"{money + prize_money}")
                 credit_card.close()
             elif text2 == 'It\'s a tie!':
+                cash_sound.play()
                 prize_money = bet_value
                 credit_card = open("BlackJack/assets/coin.txt", 'w')
                 credit_card.write(f"{money + prize_money}")
@@ -356,6 +360,7 @@ def options(previous='menu'):
     global sfx_status
     global button_sound
     global card_sound
+    global cash_sound
     sfx_tick = True
     music_tick = True
     while True:
@@ -402,10 +407,12 @@ def options(previous='menu'):
         if not sfx_status and sfx_tick:
             button_sound = mixer.Sound(f"{silence}")
             card_sound = mixer.Sound(f"{silence}")
+            cash_sound = mixer.Sound(f"{silence}")
             sfx_tick = False
         elif sfx_status and not sfx_tick:
             button_sound = mixer.Sound("BlackJack/assets/Button⧸Plate Click (Minecraft Sound).wav")
-            card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.mp3")
+            card_sound = mixer.Sound("BlackJack/assets/card_deck_flick_click.wav")
+            cash_sound = mixer.Sound("BlackJack/assets/Cash Register.wav")
             sfx_tick = True
 
         for event in pygame.event.get():
